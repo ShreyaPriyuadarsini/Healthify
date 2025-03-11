@@ -5,7 +5,7 @@ export default class index extends Component {
   render() {
     return (
       <View>
-        <Text>gandu</Text>
+        <Text>gandu shreya</Text>
       </View>
     )
   }
