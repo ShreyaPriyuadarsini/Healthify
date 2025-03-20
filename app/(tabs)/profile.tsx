@@ -53,8 +53,8 @@ const ProfileScreen: React.FC = () => {
 
       {/* User Information Card */}
       <View style={styles.card}>
-        <Text style={styles.name}>Alex Johnson</Text>
-        <InfoItem icon="user" label="Age" value="28 years" />
+        <Text style={styles.name}>SHREYASHREE PRIYADARSINI PATRA</Text>
+        <InfoItem icon="user" label="Age" value="19 years" />
         <InfoItem icon="ruler" label="Height" value="5’10”" />
         <InfoItem icon="balance-scale" label="Weight" value="165 lbs" />
         <InfoItem icon="male" label="Gender" value="Male" />
