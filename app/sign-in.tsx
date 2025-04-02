@@ -1,4 +1,3 @@
-// app/(auth)/sign-in.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -8,30 +7,39 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
+  Alert,
+  ActivityIndicator, // Added ActivityIndicator import
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { auth } from '../firebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Added loading state
   const router = useRouter();
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (!email || !password) {
-      alert('Please enter both email and password');
+      Alert.alert('Error', 'Please enter both email and password');
       return;
     }
-    console.log('Sign in with:', { email, password });
-    router.push('/(tabs)');
+
+    setIsLoading(true); // Set loading to true when sign-in starts
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/(tabs)');
+    } catch (error: any) {
+      Alert.alert('Sign In Failed', error.message);
+      console.error('Firebase sign in error:', error);
+    } finally {
+      setIsLoading(false); // Set loading to false when sign-in completes (success or fail)
+    }
   };
 
   const handleForgotPassword = () => {
     console.log('Forgot password pressed');
-  };
-
-  const handleSkip = () => {
-    console.log('Skipping login');
-    router.push('/(tabs)');
   };
 
   const handleGoToSignUp = () => {
@@ -41,9 +49,6 @@ export default function SignInScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-        <Text style={styles.skipButtonText}>Skip</Text>
-      </TouchableOpacity>
       <View style={styles.content}>
         <Image
           source={require('../assets/images/sh2.png')}
@@ -62,6 +67,7 @@ export default function SignInScreen() {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!isLoading} // Disable input while loading
           />
         </View>
         <View style={styles.inputContainer}>
@@ -74,15 +80,24 @@ export default function SignInScreen() {
             onChangeText={setPassword}
             secureTextEntry
             autoCapitalize="none"
+            editable={!isLoading} // Disable input while loading
           />
         </View>
-        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-          <Text style={styles.signInButtonText}>SIGN IN</Text>
+        <TouchableOpacity 
+          style={[styles.signInButton, isLoading && styles.signInButtonDisabled]} 
+          onPress={handleSignIn}
+          disabled={isLoading} // Disable button while loading
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={styles.signInButtonText}>SIGN IN</Text>
+          )}
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleForgotPassword}>
+        <TouchableOpacity onPress={handleForgotPassword} disabled={isLoading}>
           <Text style={styles.forgotPassword}>Forgot your password?</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleGoToSignUp}>
+        <TouchableOpacity onPress={handleGoToSignUp} disabled={isLoading}>
           <Text style={styles.forgotPassword}>Need an account? Sign Up</Text>
         </TouchableOpacity>
       </View>
@@ -94,18 +109,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-  },
-  skipButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    padding: 10,
-    zIndex: 1,
-  },
-  skipButtonText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -154,6 +157,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 20,
   },
+  signInButtonDisabled: { // Added disabled button style
+    backgroundColor: '#99C1FF',
+  },
   signInButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
@@ -163,16 +169,6 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 10, // Added spacing between links
-  },
-  curvedBackground: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-    backgroundColor: '#00C4FF',
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
+    marginTop: 10,
   },
 });

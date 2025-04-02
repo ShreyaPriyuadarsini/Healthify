@@ -1,4 +1,3 @@
-// app/(auth)/sign-up.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -8,64 +7,53 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { auth } from '../firebaseConfig';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 export default function SignUpScreen() {
-  // State for form inputs
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const router = useRouter();
 
-  // Handle Sign-Up button press
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
-      alert('Please fill in all fields');
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
-    // TODO: Add Firebase authentication here for signup
-    console.log('Sign up with:', { email, password });
-    router.push('/(tabs)'); // Navigate to tabs after sign-up
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      console.log('User registered successfully');
+      router.push('/(tabs)');
+    } catch (error: any) {
+      Alert.alert('Sign Up Failed', error.message);
+      console.error('Sign-up error:', error);
+    }
   };
 
-  // Handle Skip button press
-  const handleSkip = () => {
-    console.log('Skipping signup');
-    router.push('/(tabs)'); // Navigate to tabs on skip
-  };
   const handleGoToSignIn = () => {
-    console.log('Navigating to sign-up');
+    console.log('Navigating to Sign In');
     router.push('/sign-in');
   };
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Skip Button */}
-      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-        <Text style={styles.skipButtonText}>Skip</Text>
-      </TouchableOpacity>
-
-      {/* Main content */}
       <View style={styles.content}>
-        {/* Image */}
         <Image
           source={require('../assets/images/sh.png')}
           style={styles.topImage}
           resizeMode="contain"
         />
-
-        {/* Title */}
         <Text style={styles.title}>Sign Up</Text>
-
-        {/* Subtitle */}
         <Text style={styles.subtitle}>Create an account to get started!</Text>
-
-        {/* Email Input */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -78,8 +66,6 @@ export default function SignUpScreen() {
             autoCapitalize="none"
           />
         </View>
-
-        {/* Password Input */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Password</Text>
           <TextInput
@@ -92,8 +78,6 @@ export default function SignUpScreen() {
             autoCapitalize="none"
           />
         </View>
-
-        {/* Confirm Password Input */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Confirm Password</Text>
           <TextInput
@@ -106,39 +90,21 @@ export default function SignUpScreen() {
             autoCapitalize="none"
           />
         </View>
-
-        {/* Sign Up Button */}
         <TouchableOpacity style={styles.signInButton} onPress={handleSignUp}>
           <Text style={styles.signInButtonText}>SIGN UP</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={handleGoToSignIn}>
+          <Text style={styles.forgotPassword}>Already have an account? Sign In</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity onPress={handleGoToSignIn}>
-                  <Text style={styles.forgotPassword}>Need an account? Sign Up</Text>
-                </TouchableOpacity>
-
-      {/* Curved Background at Bottom */}
     </SafeAreaView>
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-  },
-  skipButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    padding: 10,
-    zIndex: 1,
-  },
-  skipButtonText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -176,7 +142,7 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 10, // Added spacing between links
+    marginTop: 10,
   },
   input: {
     borderWidth: 1,
@@ -198,15 +164,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  curvedBackground: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-    backgroundColor: '#00C4FF',
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
   },
 });
